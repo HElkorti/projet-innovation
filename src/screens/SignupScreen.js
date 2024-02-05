@@ -14,7 +14,8 @@ import { Picker } from "@react-native-picker/picker";
 // import { signUp } from "../utils/actions/authActions";
 import { useDispatch } from 'react-redux';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
+import { createUserWithEmailAndPassword } from "firebase/auth";
+import { FIREBASE_AUTH } from "../../firebaseConfig";
 const isTestMode = true;
 
 const initialState = {
@@ -32,6 +33,7 @@ const initialState = {
 };
 
 const Signup = ({ navigation }) => {
+  const auth=FIREBASE_AUTH;
 //   const [error, setError] = useState();
   const [isLoading, setIsLoading] = useState(false);
   const [formState, dispatchFormState] = useReducer(reducer, initialState);
@@ -105,25 +107,21 @@ function generateID() {
   var randomNumber = generateRandomNumber();
   return "par-" + randomNumber;
 }
-const inscrire=async ()=>{
-  const user={
-    id:generateID(),
-    nom:nom,
-    prenom:prenom,
-    genre: selectedGenre,
-    dateNaissance:date,
-    email:email,
-    password:password
-  }
-  console.log(user)
-  const jsonUser = JSON.stringify(user);
+
+const signUp = async () => {
+  setIsLoading(true)
   try {
-    await AsyncStorage.setItem('user', jsonUser);
-    console.log('Objet enregistré avec succès !');
-  } catch (error) {
-    console.log('Erreur lors de l\'enregistrement de l\'objet : ', error);
+    const response = await createUserWithEmailAndPassword(auth,email,password);
+    console.log(response);
+    navigation.navigate("Ajouter un enfant")
+    console.log("Done")
+  }catch (error){
+    console.log(error)
+    console.log("Erreur")
+  }finally{
+    setIsLoading(false)
   }
-  navigation.navigate("Ajouter un enfant")
+  
 }
   function handleOnPress() {
     setOpen(!open);
@@ -234,6 +232,9 @@ const inscrire=async ()=>{
             placeholder="Email Address"
             placeholderTextColor={COLORS.gray}
             keyboardType="email-address"
+            value={email}
+            autoCapitalize="none"
+            onChangeText={(text)=> setEmail(text)}
           />
           <Input
             id="password"
@@ -243,7 +244,8 @@ const inscrire=async ()=>{
             placeholderTextColor={COLORS.gray}
             keyboardType="Mot-de-passe"
             secureTextEntry={true}
-
+            value={password}
+            onChangeText={(text)=> setPassword(text)}
           />
           <Input
             // onInputChanged={inputChangedHandler}
@@ -252,13 +254,14 @@ const inscrire=async ()=>{
             placeholder="Confirmer mot de passe"
             placeholderTextColor={COLORS.gray}
             secureTextEntry={true}
-            
+            value={Cpassword}
+            onChangeText={(text)=> setCPassword(text)}
           />
           <Button
             title="S'inscrire"
             // onPress={authHandler}
             // isLoading={isLoading}
-            onPress={inscrire}
+            onPress={signUp}
             style={{
               width: SIZES.width - 32,
               marginVertical: 8,
@@ -270,7 +273,7 @@ const inscrire=async ()=>{
               Vous avez déjà un compte ?
             </Text>
             <TouchableOpacity
-            onPress={inscrire}
+            onPress={()=>{navigation.navigate("Connecter")}}
             >
               <Text style={{ ...FONTS.h3, color: COLORS.white }}> Connecter</Text>
             </TouchableOpacity>

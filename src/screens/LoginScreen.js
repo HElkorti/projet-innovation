@@ -1,5 +1,5 @@
 import { View, Text, Image, Alert, TouchableOpacity, StyleSheet, ScrollView } from "react-native";
-import React, { useCallback, useEffect, useReducer, useState } from "react";
+import React, { useCallback, useEffect, useReducer, useState, Alert } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { COLORS, FONTS, SIZES } from "../constants/theme";
 import image from "../constants/image";
@@ -9,7 +9,8 @@ import Input from "../components/input";
 import Button from "../components/Button";
 // import { signIn } from "../utils/actions/authActions";
 import { useDispatch} from "react-redux"
-
+import { FIREBASE_AUTH } from "../../firebaseConfig";
+import {signInWithEmailAndPassword} from 'firebase/auth'
 // const isTestMode = true;
 
 // const initialState = {
@@ -26,7 +27,25 @@ import { useDispatch} from "react-redux"
 
 const Login = ({ navigation }) => {
 //   const [error, setError] = useState();
+  const [email,setEmail]=useState("");
+  const [password,setPassword]=useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const auth=FIREBASE_AUTH;
+
+  const signIn = async () => {
+    setIsLoading(true)
+    try {
+      const response = await signInWithEmailAndPassword(auth,email,password);
+      console.log(response);
+      navigation.navigate("Ajouter un enfant")
+      console.log("Done")
+    }catch (error){
+      console.log(error)
+      Alert.alert("rafik boubkir")
+    }finally{
+      setIsLoading(false)
+    }
+  }
 //   const [formState, dispatchFormState] = useReducer(reducer, initialState);
 //   const dispatch = useDispatch()
 
@@ -90,6 +109,9 @@ const Login = ({ navigation }) => {
             placeholder="Email Address"
             placeholderTextColor={COLORS.gray}
             keyboardType="email-address"
+            value={email}
+            autoCapitalize="none"
+            onChangeText={(text)=> setEmail(text)}
           />
           <Input
             // onInputChanged={inputChangedHandler}
@@ -98,11 +120,13 @@ const Login = ({ navigation }) => {
             id="password"
             placeholder="Password"
             placeholderTextColor={COLORS.gray}
+            value={password}
             secureTextEntry={true}
+            onChangeText={(text)=> setPassword(text)}
           />
           <Button
             title="Connecter"
-            onPress={authHandler}
+            onPress={signIn}
             isLoading={isLoading}
             style={{
               width: SIZES.width - 32,
